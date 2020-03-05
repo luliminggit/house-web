@@ -1,0 +1,130 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3c.org/TR/1999/REC-html401-19991224/loose.dtd">
+<!-- saved from url=(0044)http://localhost:8080/HouseRent/page/add.jsp -->
+<HTML xmlns="http://www.w3.org/1999/xhtml"><HEAD><TITLE>青鸟租房 -发布房屋信息</TITLE>
+<META content="text/html; charset=utf-8" http-equiv=Content-Type><LINK 
+rel=stylesheet type=text/css href="../css/style.css">
+<script src="../js/vue.min.js"></script>
+<script src="../js/axios.min.js"></script>
+<META name=GENERATOR content="MSHTML 8.00.7601.17514"></HEAD>
+<BODY>
+  <div id="app">
+<DIV id=header class=wrap>
+<DIV id=logo><IMG src="../images/logo.gif"></DIV></DIV>
+<DIV id=regLogin class=wrap>
+<DIV class=dialog>
+<DL class=clearfix>
+  <DT>新房屋信息发布</DT>
+  <DD class=past>填写房屋信息</DD></DL>
+<DIV class=box>
+<FORM id="form1" method=post name=add.action enctype="multipart/form-data">
+<DIV class=infos>
+<TABLE class=field>
+  <TBODY>
+  <TR>
+    <TD class=field>标　　题：</TD>
+    <TD><INPUT id=add_action_title class=text type=text name="title"> </TD></TR>
+  <TR>
+    <TD class=field>户　　型：</TD>
+    <TD><SELECT class=text name="typeId">
+         <OPTION v-for="item in types" v-bind:value="item.id">{{item.name}}</OPTION>
+      </SELECT></TD></TR>
+  <TR>
+    <TD class=field>面　　积：</TD>
+    <TD><INPUT id=add_action_floorage class=text type=text 
+name="floorage"></TD></TR>
+  <TR>
+    <TD class=field>价　　格：</TD>
+    <TD><INPUT id=add_action_price class=text type=text name="price"> </TD></TR>
+  <!-- <TR>
+    <TD class=field>房产证日期：</TD>
+    <TD><INPUT class=text  type="date" name="pubdate"></TD></TR> -->
+  <TR>
+    <TD class=field>位　　置：</TD>
+    <TD>区：<SELECT class=text name="streetId" v-model="id" @change="loadStrict();"><OPTION v-for="dis in district" v-bind:value="dis.id">{{dis.name}}</OPTION ></SELECT> 
+      街：<SELECT class=text 
+        name=street_id><OPTION v-for="str in strects" v-bind:value="str.id" >{{str.name}}</OPTION></SELECT> </TD></TR>
+  <TR>
+    <TD class=field>联系方式：</TD>
+    <TD><INPUT id=add_action_contact class=text type=text name="contact"> </TD></TR>
+  <TR>
+    <TD class=field>详细信息：</TD>
+    <TD><TEXTAREA name="description"></TEXTAREA></TD></TR>
+    <TR>
+      <TD class=field>图片：</TD>
+      <TD><input type="file" name="file" id="ss"></TD></TR>
+  </TBODY></TABLE>
+<DIV class=buttons><INPUT @click="addHouse()" value=立即发布 type=button> 
+</DIV></DIV></FORM></DIV></DIV></DIV>
+<DIV id=footer class=wrap>
+<DL>
+  <DT>青鸟租房 © 2018 北大青鸟 京ICP证1000001号</DT>
+  <DD>关于我们 · 联系方式 · 意见反馈 · 帮助中心</DD></DL></DIV>
+</div>
+</BODY>
+</HTML>
+  <script>
+    axios.defaults.withCredentials=true; 
+//配置请求标准路径
+axios.defaults.baseURL="http://localhost:8080/"; 
+
+var vm=new Vue({
+  el:"#app",
+  data:{
+    types:null,  //存所有类型
+    district:null, //存所有区域
+    id:null,   //获取下拉列表的值
+    strects:null  //存街道
+  },
+  mounted:function(){
+    //发送异步请求加载所有类型
+    axios.get('getTypes')
+    .then(res => {
+      //将返回的数据设置到模型
+      this.types=res.data;
+  
+    })
+    .catch(err => {  // 请求失败处理  error是错误信息
+      console.error(err); 
+    });
+ 
+ //发送异步请求加载所有区域 
+    axios.get('getAllDistrict')
+    .then(res => {
+      //将返回的数据设置到模型
+      this.district=res.data;
+    })
+    .catch(err => {  // 请求失败处理  error是错误信息
+      console.error(err); 
+    });
+  },
+  
+  methods:{
+    //根据区域查找街道 传id值
+    loadStrict:function(){
+      axios.get('getStreetById?id='+this.id)
+      .then(res => {
+        this.strects=res.data;
+      })
+      .catch(err => {
+        console.error(err); 
+      })
+    },
+    //发布出租房
+    addHouse:function(){
+      //获取表单数据，并序列化传递到后台
+      var formData=new FormData(document.getElementById("form1"));
+      axios.post('fabuHouse',formData)
+      .then(res => {
+       if(res.data.result==1){
+           alert("发布成功")
+       }else{
+         alert("发布失败")
+       }
+      })
+    }
+  }
+});
+
+
+
+</script>

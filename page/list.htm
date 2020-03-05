@@ -1,0 +1,154 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3c.org/TR/1999/REC-html401-19991224/loose.dtd">
+<!-- saved from url=(0030)http://localhost:8080/House-2/ -->
+<HTML xmlns="http://www.w3.org/1999/xhtml"><HEAD><TITLE>青鸟租房 - 首页</TITLE>
+<META content="text/html; charset=utf-8" http-equiv=Content-Type>
+<LINK rel=stylesheet type=text/css href="../css/style.css">
+  <script src="../js/vue.min.js"></script>
+<script src="../js/axios.min.js"></script>
+<META name=GENERATOR content="MSHTML 8.00.7601.17514"></HEAD>
+<BODY>
+  <div id="app">
+<DIV id=header class=wrap>
+<DIV id=logo><IMG src="../images/logo.gif"></DIV></DIV>
+<DIV id=navbar class=wrap>
+<DL class="search clearfix">
+  <FORM id=sform method=post >
+          标题：<input type="text" name="title">
+          区域：<SELECT class=text name="streetId" v-model="id" @change="loadStrict();" name="did">
+              <OPTION v-for="dis in district" v-bind:value="dis.id">{{dis.name}}</OPTION >
+            </SELECT>
+          街道：<SELECT class=text name=sid>
+          <OPTION v-for="str in strects" v-bind:value="str.id" >{{str.name}}</OPTION>
+        </SELECT>  
+         房型： <SELECT class=text name="tid">
+          <option value="">请选择</option>
+          <OPTION v-for="item in types" v-bind:value="item.id">{{item.name}}</OPTION>
+       </SELECT>
+       价格：<input type="text" size="8" name="startPrice">- <input type="text" size="8" name="endPrice">
+       <INPUT @click=doSearch() value=搜索房屋 type=button name=search>
+    </FORM></DL></DIV>
+
+<DIV class="main wrap">
+  <TABLE class=house-list>
+    <TBODY>
+      <TR v-for="h in rows">
+      <TD class=house-thumb><span><A href="details.htm" target="_blank"><img v-bind:src="h.path|changePath" width="100" height="75" alt=""></a></span></TD>
+      <TD>
+        <DL>
+          <DT><A href="details.htm" target="_blank">{{h.title}}</A></DT>
+          <DD>{{h.dname}}{{h.sname}},{{h.floorage}}平米<BR>联系方式：{{h.contact}} </DD></DL></TD>
+      <TD class=house-type>{{h.tname}}</TD>
+      <TD class=house-price><SPAN>{{h.price}}</SPAN>元/月</TD>
+    </TR>
+  </TBODY></TABLE>
+<DIV class=pager>
+<UL>
+  <li v-for="num in totalPage">
+     <a @click="goPage(num)" >{{num}}</a>
+  </li> 
+  <!-- <LI class=current><A href="#">首页</A></LI>
+  <LI><A href="#">上一页</A></LI>
+  <LI><A href="#">下一页</A></LI>
+  <LI><A href="#">末页</A></LI></UL>  --></DIV></DIV>
+<DIV id=footer class=wrap>
+<DL>
+  <DT>青鸟租房 © 2018 北大青鸟 京ICP证1000001号</DT>
+  <DD>关于我们 · 联系方式 · 意见反馈 · 帮助中心</DD></DL></DIV>
+</div>
+</BODY></HTML>
+<script>
+  axios.defaults.withCredentials=true; 
+//配置请求标准路径
+axios.defaults.baseURL="http://localhost:8080/"; 
+var vm=new Vue({
+el:"#app",
+data:{
+  types:null,  //存所有类型
+  district:null, //存所有区域
+  id:null,   //获取下拉列表的值
+  strects:null, //存街道
+  rows:null, //当前页的内容
+  totalPage:0 //总页数
+},
+mounted:function(){
+  //发送异步请求加载所有类型
+  axios.get('getTypes')
+  .then(res => {
+    //将返回的数据设置到模型
+    this.types=res.data;
+
+  })
+  .catch(err => {  // 请求失败处理  error是错误信息
+    console.error(err); 
+  });
+
+//发送异步请求加载所有区域 
+  axios.get('getAllDistrict')
+  .then(res => {
+    //将返回的数据设置到模型
+    this.district=res.data;
+  })
+  .catch(err => {  // 请求失败处理  error是错误信息
+    console.error(err); 
+  });
+ //异步请求显示所有租房信息
+   axios.get("getAllHouse")
+   .then(res => {
+     this.rows=res.data.row;
+     this.totalPage=res.data.totalPage;
+   })
+   .catch(err => {
+     console.error(err); 
+   })
+ 
+},
+methods:{
+  //根据区域查找街道 传id值
+  loadStrict:function(){
+    //alert(this.id)
+    axios.get('getStreetById?id='+this.id)
+    .then(res => {
+      this.strects=res.data;
+    })
+    .catch(err => {
+      console.error(err); 
+    })
+  },
+   //搜索出租房
+   doSearch:function(){
+       var formdata=new FormData(document.getElementById("sform")) 
+       axios.post("getAllHouse",formdata)
+       .then(res => {
+         this.rows=res.data.row;
+         this.totalPage=res.data.totalPage;
+       })
+       .catch(err => {
+         console.error(err); 
+       })
+   },
+
+  goPage:function(num){
+    var formdata=new FormData(document.getElementById("sform"))
+     //使用append方法追加分页
+     formdata.append("page",num);
+    axios.post("getAllHouse",formdata)
+    .then(res => {
+       this.rows=res.data.row;
+         this.totalPage=res.data.totalPage;
+    })
+    .catch(err => {
+      console.error(err); 
+    })
+  }
+},
+filters:{   
+          //现绑定的值进行更新 val表示要过滤的值
+          changePath:function(val){
+            console.log(val)
+            return "http://localhost:80/"+val;
+          }
+     }
+
+});
+</script>
+

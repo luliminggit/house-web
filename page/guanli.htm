@@ -1,0 +1,103 @@
+﻿<!DOCTYPE HTML5>
+<HTML xmlns="http://www.w3.org/1999/xhtml"><HEAD>
+<TITLE>青鸟租房 - 用户管理</TITLE>
+<META content="text/html; charset=utf-8" http-equiv=Content-Type>
+  <LINK 
+rel=stylesheet type=text/css href="../css/style.css">
+<script src="../js/vue.min.js"></script>
+<script src="../js/axios.min.js"></script>
+<META name=GENERATOR ></HEAD>
+<BODY>
+  <div id="app">
+<DIV id=header class=wrap>
+<DIV id=logo><IMG src="../images/logo.gif"></DIV>
+<DIV class=search><LABEL class="ui-green searchs"><a href="fabu.htm" title="">发布房屋信息</a></LABEL> 
+<LABEL class=ui-green><INPUT onclick='document.location="index.jsp"' value="退       出" type=button name=search></LABEL> 
+</DIV></DIV>
+<DIV class="main wrap">
+<DIV id=houseArea>
+<TABLE class=house-list>
+  <TBODY>
+  <TR v-for="item in rows" >
+    <TD class=house-thumb><SPAN><A href="details.htm" target="_blank"><img v-bind:src="item.path|changePath" width="100" height="75" alt=""></A></SPAN></TD>
+    <TD>
+      <DL>
+        <DT><A href="details.htm" target="_blank">{{item.title}}</A></DT>
+        <DD>{{item.dname}}{{item.sname}},{{item.floorage}}<BR> {{item.contact}} </DD></DL></TD>
+    <TD class=house-type><LABEL class=ui-green><INPUT onclick=update(46) value="修    改" type=button name=search></LABEL></TD>
+    <TD class=house-price><LABEL class=ui-green><INPUT @click="deleteHouse(item.id,item.path)" value="删    除" type=button name=search></LABEL></TD></TR>
+  </TBODY></TABLE></DIV>
+<DIV class=pager>
+<UL>
+  <LI class=current v-for="num in totalPage">
+    <A id=widget_1160989910 @click="goPage(num)">{{num}}</A>
+   </LI>
+  </UL> </DIV></DIV>
+<DIV id=footer class=wrap>
+<DL>
+  <DT>青鸟租房 © 2018 北大青鸟 京ICP证1000001号</DT>  
+  <DD>关于我们 · 联系方式 · 意见反馈 · 帮助中心</DD></DL></DIV>
+</div>
+</BODY></HTML>
+<script>
+         //默认不支持session共享
+      axios.defaults.withCredentials=true; 
+     // 配置请求的基准URL地址
+  axios.defaults.baseURL = 'http://localhost:8080/';
+  var vm=new Vue({
+    el:"#app",
+    data:{
+       rows:null,  //当前页的内容
+       totalPage:null  ////存放总页数
+    },
+    mounted:function(){  
+      //加载钓子函数，加载页面执行异步请求
+      axios.post("getHouseByPage")
+      .then(res => {
+        this.rows=res.data.rows;
+        this.totalPage=res.data.totalPage;
+      })
+      .catch(err => {
+        console.error(err); 
+      })
+
+    },
+    methods:{ 
+      //超链接跳转哪一页
+      goPage:function(num){
+      axios.get("getHouseByPage?page="+num)
+      .then(res => {
+       this.rows=res.data.rows;
+       this.totalPage=res.data.totalPage;
+      })
+      .catch(err => {
+        console.error(err); 
+      })
+     },
+     //删除租房信息
+     deleteHouse:function(id,filename){
+        axios.get("deleteHouse",{params:{"id":id,"filename":filename}})
+        .then(res => {
+          if(res.data.result==1){
+               alert("删除成功")
+               //刷新当前页
+               location.reload(); 
+          }else{
+            alert("删除失败")
+          }
+        })  
+        .catch(err => {
+          console.error(err); 
+        })
+     }
+    },
+    filters:{   
+          //现绑定的值进行更新 val表示要过滤的值
+          changePath:function(val){
+            return "http://localhost:80/"+val;
+          }
+     },
+    
+  })
+</script>
+
